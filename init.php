@@ -430,11 +430,11 @@ if (! function_exists('getReCaptchaInputHtml'))
 
         if ($config['kj_recaptcha_type'] == 2 || $config['kj_recaptcha_type'] == 3)
         {
-            return '<div id="aarecaptcha" style="margin: 10px 0; text-align: center; max-width: 255px;"></div>';
+            return '<div id="aarecaptcha" data-size="invisible" style="display:none;margin: 10px 0; text-align: center; max-width: 255px;"></div>';;
         }
         elseif ($config['kj_recaptcha_type'] == 1)
         {
-            return '<div class="g-recaptcha" data-sitekey="' . $config['kj_recaptcha_sitekey'] . '" style="margin: 10px 0; text-align: center; max-width: 255px;"></div>';
+            return '<div class="g-recaptcha" data-sitekey="' . $config['kj_recaptcha_sitekey'] . '"  style="margin: 10px 0; text-align: center; max-width: 255px;"></div>';
         }
     }
 }
@@ -445,7 +445,11 @@ if (! function_exists('getReCaptchaInputHeadHtml'))
     {
         global $config;
 
-        $disable_submit_code =  'var disableSubmit = function(state){
+        if ($config['kj_recaptcha_type'] == 2 || $config['kj_recaptcha_type'] == 3)
+        {
+            return '<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit&hl=' . $config['language'] . '"></script>' .
+               '<script>
+                var disableSubmit = function(state){
                     var children = document.getElementsByTagName("form").childNodes;
                     var parent = null;
                     for(child in children){
@@ -460,13 +464,7 @@ if (! function_exists('getReCaptchaInputHeadHtml'))
                         return;
                     }
                     parent.querySelectorAll("input[type=submit]").disabled = state;
-                };';
-
-        if ($config['kj_recaptcha_type'] == 2)
-        {
-            return '<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit&hl=' . $config['language'] . '"></script>' .
-               '<script>
-                ' . $disable_submit_code . '
+                };
                var onloadCallback = function(){
                    disableSubmit(true);
                     grecaptcha.render("aarecaptcha", {
@@ -480,23 +478,6 @@ if (! function_exists('getReCaptchaInputHeadHtml'))
                      grecaptcha.execute();
                };
                  </script>';
-        }
-        elseif ($config['kj_recaptcha_type'] == 3)
-        {
-            return '<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=' . $config['kj_recaptcha_sitekey'] . '&hl=' . $config['language'] . '"></script>
-                <script>
-                ' . $disable_submit_code . '
-                    var onloadCallback = function(){
-                        disableSubmit(true);
-                    };
-                    grecaptcha.ready(function() {
-                        grecaptcha.execute("' . $config['kj_recaptcha_sitekey'] . '", {action:"validate_captcha"})
-                                .then(function(token) {
-                            document.getElementById("g-recaptcha-response").value = token;
-                            disableSubmit(false);
-                        });
-                    });
-                </script>';
         }
         elseif ($config['kj_recaptcha_type'] == 1)
         {
